@@ -14,7 +14,7 @@ const Footer = () => {
                         <span className="font-semibold text-primary-100 text-xl ml-2">ViraShare</span>
                     </div>
 
-                    <p className="text-primary-300 text-sm leading-relaxed">Lorem ipsum dolor sit amet consectetur. Id enim cursus risus interdum mattis tellus cursus suspendisse. Sed tristique enim nibh vehicula.</p>
+                    <p className="text-primary-300 text-sm leading-relaxed">ViraShare lets you earn rewards by sharing content online — no matter where you are in the world. Just share, earn, and repeat.</p>
 
                     <div className="flex gap-4">
                         <a href="#" className="text-primary-300 hover:text-primary-100 transition-colors">
