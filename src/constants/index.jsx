@@ -33,6 +33,11 @@ export const navbarLinks = [
                 path: "/dashboard/tasks",
             },
             {
+                label: "Tasks Log",
+                icon: NotepadText,
+                path: "/dashboard/tasksLog",
+            },
+            {
                 label: "Logout",
                 icon: NotepadText,
                 path: "/dashboard/logout",
