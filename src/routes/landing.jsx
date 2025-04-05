@@ -52,7 +52,7 @@ const App = () => {
                     </div>
 
                     {/* Description */}
-                    <p className="text-sm text-primary-200 max-w-md mt-6">Lorem ipsum dolor sit amet consectetur. Id enim cursus risus interdum mattis tellus cursus suspendisse. Sed tristique enim nibh.</p>
+                    <p className="text-sm text-primary-200 max-w-md mt-6">ViraShare makes it easy to earn — share content, spread the word, and get rewarded from anywhere on the planet.</p>
 
                     {/* App Store and Play Store Buttons */}
                     <div className="flex gap-4 mt-8">
