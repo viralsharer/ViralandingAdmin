@@ -6,22 +6,15 @@
     <p>
         Build a Modern Dashboard UI Design using React JS, TailwindCSS.
 </p>
-<a href="https://youtu.be/uHxZMmvQXHQ">Watch Tutorial</a>
+
 
 </div>
 
 <br />
 
-![Dashboard UI Design](./public/Dashboard%20UI%20Design.png)
 
-## 🗒️ Table of Contents
 
-1. [💬 Introduction](#introduction)
-2. [🛠️ Tools](#tools)
-3. [✨ Features](#features)
-4. [🚀 Getting Started](#getting-started)
-5. [💻 Code Snippets](#code-snippets)
-6. [☕ Support Me](#support-me)
+
 
 ## <a name="introduction">💬 Introduction</a>
 
@@ -44,21 +37,6 @@ Welcome to the Dashboard UI Design repository! This project is a comprehensive g
 
 To get started follow these steps:
 
-#### Cloning the Repository
-
-Using CLI
-
-```bash
-git clone https://github.com/xdcode2/dashboard-ui-design.git
-```
-
-**\*\*_Ensure you have installed [Git](https://git-scm.com) on your machine._**
-
-or using GitHub:
-
--   Go to the project [repository](https://github.com/xdcode2/dashboard-ui-design) on my GitHub page
--   Click on the green button on the top 👆
--   Click Download ZIP
 
 #### Installation
 
@@ -78,8 +56,3 @@ npm run dev
 
 **\*\*_This project uses [Vite](https://vitejs.dev)._**
 
-## <a name="support-me">☕ Support Me</a>
-
-[![ko-fi](https://img.shields.io/static/v1?message=Support%20me%20on%20ko-fi&logo=kofi&label=&color=ff5e5b&logoColor=white&labelColor=&style=for-the-badge)](https://ko-fi.com/J3J1NMYT7)
-
-[![youtube](https://img.shields.io/static/v1?message=Subscribe&logo=youtube&label=&color=FF0000&logoColor=white&labelColor=&style=for-the-badge)](https://www.youtube.com/@_xdcode_ "XD Code")
