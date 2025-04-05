@@ -1,4 +1,4 @@
-import Navbar from "./navbar";
+import Navbar from "./Navbar";
 import Tag from "./tag";
 import ServiceCard  from './ServiceCard'
 import HowItWorksAccordion from "./HowItWorksAccordion";
