@@ -9,6 +9,8 @@ import Dashboard from "@/routes/dashboard/page";
 import Packages from "@/routes/packages";
 import Engagement from "@/routes/engagement";
 import SocialPlatform from "@/routes/socialPlatform";
+import Users from "@/routes/user";
+import Transactions from "@/routes/transactions";
 import Tasks from "@/routes/tasks";
 import TaskLog from "@/routes/taskLog";
 import Login from "@/routes/login";
@@ -19,7 +21,6 @@ const isAuthenticated = () => {
   const token = localStorage.getItem("token");
   return !!token;
 };
-console.log("Is authenticated?", isAuthenticated());
 const router = createBrowserRouter([
   {
     path: "/",
@@ -56,6 +57,14 @@ const router = createBrowserRouter([
       {
         path: "tasksLog",
         element: <TaskLog />,
+      },
+      {
+        path: "users",
+        element: <Users />,
+      },
+      {
+        path: "transactions",
+        element: <Transactions />,
       },
       {
         path: "logout",

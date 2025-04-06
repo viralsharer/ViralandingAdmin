@@ -154,15 +154,18 @@ const PackagesPage = () => {
 
             <div className="card">
                 <DataTable
-                  columns={columns}
-                  data={packages}
-                  pagination
-                  highlightOnHover
-                  striped
-                  responsive
-                  customStyles={customStyles}
-                  theme={theme === 'dark' ? 'dark' : 'light'}
-                  noDataComponent={<p className="p-4 text-center">No packages found</p>}
+                    columns={columns}
+                    data={packages}
+                    pagination
+                    highlightOnHover
+                    paginationPerPage={50}
+                    paginationRowsPerPageOptions={[10, 25, 50, 100, 200]}
+                    persistTableHead
+                    striped
+                    responsive
+                    customStyles={customStyles}
+                    theme={theme === 'dark' ? 'dark' : 'light'}
+                    noDataComponent={<p className="p-4 text-center">No packages found</p>}
                 />
             </div>
         </div>

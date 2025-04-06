@@ -123,6 +123,9 @@ const TaskLog = () => {
                     data={filteredTaskLogs}
                     pagination
                     highlightOnHover
+                    paginationPerPage={50}
+                    paginationRowsPerPageOptions={[10, 25, 50, 100, 200]}
+                    persistTableHead
                     striped
                     responsive
                     customStyles={customStyles}

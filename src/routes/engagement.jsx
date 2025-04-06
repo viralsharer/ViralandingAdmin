@@ -150,6 +150,9 @@ const Engagement = () => {
                     highlightOnHover
                     striped
                     responsive
+                    paginationPerPage={50}
+                    paginationRowsPerPageOptions={[10, 25, 50, 100, 200]}
+                    persistTableHead
                     customStyles={customStyles}
                     theme={theme === 'dark' ? 'dark' : 'light'}
                     noDataComponent={<p className="p-4 text-center">No Engagement found</p>}

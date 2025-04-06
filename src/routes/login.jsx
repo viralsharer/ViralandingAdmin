@@ -24,8 +24,7 @@ function Login() {
       localStorage.setItem("admin", JSON.stringify(admin));
       
     
-      console.log("Stored token:", localStorage.getItem("token"));
-      console.log("Navigation triggered to:", "/dashboard/packages");
+
       await Swal.fire({
         icon: "success",
         title: "Success",
@@ -38,7 +37,6 @@ function Login() {
       window.location.href = "/dashboard";
       
     } catch (error) {
-      console.error('Login error:', error);
       Swal.fire({
         icon: "error",
         title: "Error",

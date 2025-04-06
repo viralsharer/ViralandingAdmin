@@ -37,7 +37,6 @@ const Tasks = () => {
         try {
             const response = await api.get("/tasks/");
             setTasks(response.data.data);
-            console.log(response.data.data);
             toast.update(loadingToast, {
                 render: "Tasks loaded",
                 type: "success",
@@ -111,7 +110,6 @@ const Tasks = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData);
         setIsLoading(true);
         try {
             if (editId) {
@@ -313,6 +311,9 @@ const Tasks = () => {
                     data={tasks} 
                     pagination 
                     highlightOnHover 
+                    paginationPerPage={50}
+                    paginationRowsPerPageOptions={[10, 25, 50, 100, 200]}
+                    persistTableHead
                     striped 
                     responsive
                     customStyles={customStyles}
