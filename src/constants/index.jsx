@@ -7,6 +7,7 @@ import {
     Clock, 
     Users, 
     CreditCard, 
+    Puzzle,
     LogOut 
   } from "lucide-react";
   
@@ -33,6 +34,11 @@ import {
                   label: "Social Platform",
                   icon: ClipboardList,
                   path: "/dashboard/socialPlatform",
+              },
+            {
+                  label: "Coupon",
+                  icon: Puzzle,
+                  path: "/dashboard/coupon",
               },
               {
                   label: "Tasks",

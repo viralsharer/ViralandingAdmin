@@ -13,6 +13,7 @@ import Users from "@/routes/user";
 import Transactions from "@/routes/transactions";
 import Tasks from "@/routes/tasks";
 import TaskLog from "@/routes/taskLog";
+import Coupon from "@/routes/coupon";
 import Login from "@/routes/login";
 import Landing from "@/routes/landing";
 import { handleLogout } from "./utils/api";
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
       {
         path: "socialPlatform",
         element: <SocialPlatform />,
+      },
+      {
+        path: "coupon",
+        element: <Coupon />,
       },
       {
         path: "tasks",
