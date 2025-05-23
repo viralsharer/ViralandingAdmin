@@ -4,12 +4,15 @@ import Swal from "sweetalert2";
 import DataTable from "react-data-table-component";
 import Modal from "@/components/modal";
 import api, { formatDate } from "@/utils/api";
-import { Plus, PencilLine, Trash, Loader2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, PencilLine, Trash, Loader2, ToggleLeft, ToggleRight, Download, FilePlus2, X } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { getTableStyles } from '@/utils/tableStyles';
 
 const Coupon = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [selectedCoupon, setSelectedCoupon] = useState(null);
     const [coupons, setCoupons] = useState([]);
     const [packages, setPackages] = useState([]);
     const [formData, setFormData] = useState({ 
@@ -18,10 +21,18 @@ const Coupon = () => {
         isActive: true,
         packageId: "" 
     });
+    const [bulkFormData, setBulkFormData] = useState({
+        quantity: 1,
+        expiryDate: "",
+        packageId: "",
+        codePrefix: ""
+    });
     const [editCode, setEditCode] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isBulkLoading, setIsBulkLoading] = useState(false);
+    const [isExportLoading, setIsExportLoading] = useState(false);
     const [loadingId, setLoadingId] = useState(null);
-    const [statusLoadingId, setStatusLoadingId] = useState(null); // Track which coupon's status is being updated
+    const [statusLoadingId, setStatusLoadingId] = useState(null);
 
     const { theme } = useTheme();
     const customStyles = getTableStyles(theme);
@@ -30,7 +41,12 @@ const Coupon = () => {
         const loadingToast = toast.loading("Fetching coupons...");
         try {
             const response = await api.get("/coupon/");
-            setCoupons(response.data.data);
+            // Sort by createdAt date (newest first)
+            const sortedCoupons = response.data.data.sort((a, b) => 
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            setCoupons(sortedCoupons);
+
             toast.update(loadingToast, { render: "Coupons loaded", type: "success", isLoading: false, autoClose: 500 });
         } catch (error) {
             toast.update(loadingToast, { render: error.response?.data?.message || "Error fetching coupons", type: "error", isLoading: false, autoClose: 500 });
@@ -55,8 +71,18 @@ const Coupon = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleBulkChange = (e) => {
+        setBulkFormData({ ...bulkFormData, [e.target.name]: e.target.value });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!formData.packageId) {
+            toast.error("Please select a package");
+            return;
+        }
+
         setIsLoading(true);
         try {
             if (editCode) {
@@ -74,6 +100,62 @@ const Coupon = () => {
             toast.error(error.response?.data?.message || "Error saving coupon");
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleBulkSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!bulkFormData.packageId) {
+            toast.error("Please select a package");
+            return;
+        }
+        if (!bulkFormData.codePrefix) {
+            toast.error("Please enter a code prefix");
+            return;
+        }
+
+        setIsBulkLoading(true);
+        try {
+            const response = await api.post("/coupon/bulk-create", bulkFormData);
+            toast.success(`Successfully created ${response.data.data.createdCount} coupons`);
+            fetchCoupons();
+            setIsBulkModalOpen(false);
+            setBulkFormData({
+                quantity: 1,
+                expiryDate: "",
+                packageId: "",
+                codePrefix: ""
+            });
+            
+          
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Error creating bulk coupons");
+        } finally {
+            setIsBulkLoading(false);
+        }
+    };
+
+    const handleExport = async () => {
+        setIsExportLoading(true);
+        try {
+            const response = await api.get("/coupon/export/export", {
+                responseType: 'blob'
+            });
+            
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'coupons-export.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+            
+            toast.success("Coupons exported successfully");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Error exporting coupons");
+        } finally {
+            setIsExportLoading(false);
         }
     };
 
@@ -114,7 +196,7 @@ const Coupon = () => {
     };
 
     const toggleStatus = async (coupon) => {
-        setStatusLoadingId(coupon.code); // Set loading state for this specific coupon
+        setStatusLoadingId(coupon.code);
         try {
             await api.patch(`/coupon/${coupon.code}/status`, {
                 isActive: !coupon.isActive
@@ -124,20 +206,27 @@ const Coupon = () => {
         } catch (error) {
             toast.error(error.response?.data?.message || "Error updating coupon status");
         } finally {
-            setStatusLoadingId(null); // Clear loading state
+            setStatusLoadingId(null);
         }
     };
 
-    // Columns for DataTable
+    const handleRowClicked = (row) => {
+        setSelectedCoupon(row);
+        setIsDetailModalOpen(true);
+    };
+
     const columns = [
         { name: "#", selector: (row, index) => index + 1, sortable: true, width: "60px" },
         { name: "Code", selector: (row) => row.code, sortable: true },
-        { name: "Package", selector: (row) => row.packageId?.name || "All Packages", sortable: true },
+        { name: "Package", selector: (row) => row.packageId?.name || "N/A", sortable: true },
         { 
             name: "Status", 
             cell: (row) => (
                 <button 
-                    onClick={() => toggleStatus(row)} 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleStatus(row);
+                    }} 
                     disabled={statusLoadingId === row.code || loadingId === row.code}
                     className="flex items-center gap-2"
                 >
@@ -159,10 +248,24 @@ const Coupon = () => {
             name: "Actions",
             cell: (row) => (
                 <div className="flex items-center gap-x-4">
-                    <button onClick={() => handleEdit(row)} className="text-secondary-500" disabled={statusLoadingId === row.code || loadingId === row.code}>
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(row);
+                        }} 
+                        className="text-secondary-500" 
+                        disabled={statusLoadingId === row.code || loadingId === row.code}
+                    >
                         <PencilLine size={20} />
                     </button>
-                    <button onClick={() => handleDelete(row.code)} className="text-red-500" disabled={statusLoadingId === row.code || loadingId === row.code}>
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(row.code);
+                        }} 
+                        className="text-red-500" 
+                        disabled={statusLoadingId === row.code || loadingId === row.code}
+                    >
                         {loadingId === row.code ? <Loader2 className="animate-spin" size={20} /> : <Trash size={20} />}
                     </button>
                 </div>
@@ -177,22 +280,44 @@ const Coupon = () => {
         <div className="flex flex-col gap-y-4">
             <div className="flex justify-between items-center">
                 <h1 className="title">Coupons</h1>
-                <button
-                    onClick={() => {
-                        setIsModalOpen(true);
-                        setFormData({ code: "", expiryDate: "", isActive: true, packageId: "" });
-                        setEditCode(null);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary-500 dark:bg-blue-500 text-white rounded-lg hover:bg-primary-600 dark:hover:bg-blue-700 transition"
-                >
-                    <Plus size={18} />
-                    Add Coupon
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => handleExport()}
+                        disabled={isExportLoading}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                    >
+                        {isExportLoading ? (
+                            <Loader2 className="animate-spin" size={18} />
+                        ) : (
+                            <Download size={18} />
+                        )}
+                        {isExportLoading ? "Exporting..." : "Export CSV"}
+                    </button>
+                    <button
+                        onClick={() => setIsBulkModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition"
+                    >
+                        <FilePlus2 size={18} />
+                        Bulk Create
+                    </button>
+                    <button
+                        onClick={() => {
+                            setIsModalOpen(true);
+                            setFormData({ code: "", expiryDate: "", isActive: true, packageId: "" });
+                            setEditCode(null);
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary-500 dark:bg-blue-500 text-white rounded-lg hover:bg-primary-600 dark:hover:bg-blue-700 transition"
+                    >
+                        <Plus size={18} />
+                        Add Coupon
+                    </button>
+                </div>
             </div>
 
+            {/* Regular Coupon Modal */}
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <form onSubmit={handleSubmit}>
-                    <label className="block mb-2 text-sm font-medium">Coupon Code</label>
+                    <label className="block mb-2 text-sm font-medium">Coupon Code <span className="text-red-500">*</span></label>
                     <input 
                         type="text" 
                         name="code" 
@@ -203,15 +328,16 @@ const Coupon = () => {
                         required
                     />
 
-                    <label className="block mt-4 mb-2 text-sm font-medium">Package (optional)</label>
+                    <label className="block mt-4 mb-2 text-sm font-medium">Package <span className="text-red-500">*</span></label>
                     <select
                         name="packageId"
                         value={formData.packageId}
                         onChange={handleChange}
                         className="w-full p-2 border rounded-md"
                         disabled={isLoading}
+                        required
                     >
-                        <option value="">All Packages</option>
+                        <option value="">Select a package</option>
                         {packages.map((pkg) => (
                             <option key={pkg._id} value={pkg._id}>
                                 {pkg.name}
@@ -219,7 +345,7 @@ const Coupon = () => {
                         ))}
                     </select>
 
-                    <label className="block mt-4 mb-2 text-sm font-medium">Expiry Date</label>
+                    <label className="block mt-4 mb-2 text-sm font-medium">Expiry Date <span className="text-red-500">*</span></label>
                     <input 
                         type="date" 
                         name="expiryDate" 
@@ -256,6 +382,111 @@ const Coupon = () => {
                 </form>
             </Modal>
 
+            {/* Bulk Create Modal */}
+            <Modal isOpen={isBulkModalOpen} onClose={() => setIsBulkModalOpen(false)}>
+                <form onSubmit={handleBulkSubmit}>
+                    <label className="block mb-2 text-sm font-medium">Quantity <span className="text-red-500">*</span></label>
+                    <input 
+                        type="number" 
+                        name="quantity" 
+                        min="1"
+                        max="100"
+                        value={bulkFormData.quantity} 
+                        onChange={handleBulkChange} 
+                        className="w-full p-2 border rounded-md" 
+                        disabled={isBulkLoading}
+                        required
+                    />
+
+                    <label className="block mt-4 mb-2 text-sm font-medium">Package <span className="text-red-500">*</span></label>
+                    <select
+                        name="packageId"
+                        value={bulkFormData.packageId}
+                        onChange={handleBulkChange}
+                        className="w-full p-2 border rounded-md"
+                        disabled={isBulkLoading}
+                        required
+                    >
+                        <option value="">Select a package</option>
+                        {packages.map((pkg) => (
+                            <option key={pkg._id} value={pkg._id}>
+                                {pkg.name}
+                            </option>
+                        ))}
+                    </select>
+
+                    <label className="block mt-4 mb-2 text-sm font-medium">Code Prefix <span className="text-red-500">*</span></label>
+                    <input 
+                        type="text" 
+                        name="codePrefix" 
+                        value={bulkFormData.codePrefix} 
+                        onChange={handleBulkChange} 
+                        className="w-full p-2 border rounded-md" 
+                        disabled={isBulkLoading}
+                        required
+                    />
+
+                    <label className="block mt-4 mb-2 text-sm font-medium">Expiry Date <span className="text-red-500">*</span></label>
+                    <input 
+                        type="date" 
+                        name="expiryDate" 
+                        value={bulkFormData.expiryDate} 
+                        onChange={handleBulkChange} 
+                        className="w-full p-2 border rounded-md" 
+                        disabled={isBulkLoading}
+                        required
+                    />
+
+                    <button 
+                        type="submit" 
+                        className="mt-4 w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition flex justify-center items-center gap-2" 
+                        disabled={isBulkLoading}
+                    >
+                        {isBulkLoading ? <Loader2 className="animate-spin" size={18} /> : null}
+                        {isBulkLoading ? "Creating..." : "Create Coupons"}
+                    </button>
+                </form>
+            </Modal>
+
+            {/* Detail View Modal */}
+            <Modal isOpen={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)}>
+                {selectedCoupon && (
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-bold">Coupon Details</h2>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Code</p>
+                                <p className="mt-1">{selectedCoupon.code}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Package</p>
+                                <p className="mt-1">{selectedCoupon.packageId?.name || "N/A"}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Status</p>
+                                <p className="mt-1">
+                                    {selectedCoupon.isActive ? (
+                                        <span className="text-green-500">Active</span>
+                                    ) : (
+                                        <span className="text-gray-500">Inactive</span>
+                                    )}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Expiry Date</p>
+                                <p className="mt-1">{formatDate(selectedCoupon.expiryDate)}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">Created At</p>
+                                <p className="mt-1">{formatDate(selectedCoupon.createdAt)}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </Modal>
+
             <div className="card">
                 <DataTable
                     columns={columns}
@@ -270,6 +501,8 @@ const Coupon = () => {
                     customStyles={customStyles}
                     theme={theme === 'dark' ? 'dark' : 'light'}
                     noDataComponent={<p className="p-4 text-center">No coupons found</p>}
+                    onRowClicked={handleRowClicked}
+                    pointerOnHover
                 />
             </div>
         </div>
