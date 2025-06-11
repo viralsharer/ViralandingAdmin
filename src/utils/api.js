@@ -2,7 +2,9 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 // Base API URL (set in .env file)
-const API_BASE_URL = 'https://virasharebackend.onrender.com/api/';
+const API_BASE_URL = 'https://virasharebackend-nipk.onrender.com/api/';
+//const API_BASE_URL = 'https://virasharebackend.onrender.com/api/';
+
 
 // Create an Axios instance
 const api = axios.create({
